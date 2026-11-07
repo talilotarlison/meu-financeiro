@@ -1,0 +1,12 @@
+Options -Indexes
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(app|config|database|docs|resources|routes|storage|tests)(/|$) - [F,L,NC]
+  RewriteRule ^(\.git|\.agents|\.codex)(/|$) - [F,L,NC]
+</IfModule>
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(\.env|README\.md|PDR\.md|PROJECT_STATUS\.md|DATABASE\.md|ARCHITECTURE\.md|CHANGELOG\.md|TASKS\.md)$">
+  Require all denied
+</FilesMatch>
