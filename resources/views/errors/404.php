@@ -1,0 +1,1 @@
+<div class="not-found"><div class="form-kicker">OPS, NÃO ENCONTRAMOS</div><h1>Esta página ainda não existe.</h1><p>Confira o endereço ou volte para sua visão geral.</p><a class="button primary" href="/dashboard">Ir para o início →</a></div>

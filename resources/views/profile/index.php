@@ -1,0 +1,6 @@
+<div class="welcome-row"><div><span class="form-kicker">SUA CONTA</span><h1>Meu perfil</h1><p class="page-subtitle">Informações e situação da sua conta.</p></div></div>
+<?php $lastLogin = $profile['last_login_at'] ? (new DateTimeImmutable($profile['last_login_at']))->setTimezone(new DateTimeZone(date_default_timezone_get())) : null; ?>
+<section class="panel profile-panel" aria-label="Informações do perfil">
+  <div class="profile-heading"><div class="avatar profile-avatar"><?= e(mb_strtoupper(mb_substr($profile['name'], 0, 1))) ?></div><div><h2><?= e($profile['name']) ?></h2><p><?= e($profile['email']) ?></p></div><span class="account-status <?= $profile['status'] === 'active' ? 'is-active' : 'is-inactive' ?>"><i></i><?= $profile['status'] === 'active' ? 'Conta ativa' : 'Conta desativada' ?></span></div>
+  <dl class="profile-details"><div><dt>E-mail</dt><dd><?= e($profile['email']) ?></dd></div><div><dt>Status da conta</dt><dd><?= $profile['status'] === 'active' ? 'Ativa' : 'Desativada' ?></dd></div><div><dt>Último login</dt><dd><?= $lastLogin ? e($lastLogin->format('d/m/Y \à\s H:i')) : 'Ainda não registrado' ?></dd></div><div><dt>Conta criada em</dt><dd><?= e((new DateTimeImmutable($profile['created_at']))->format('d/m/Y')) ?></dd></div></dl>
+</section>

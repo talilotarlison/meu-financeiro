@@ -1,0 +1,12 @@
+<?php
+declare(strict_types=1);
+
+final class PatrimonyService
+{
+    public const ASSET_TYPES=['cash'=>'Dinheiro','property'=>'Imóvel','vehicle'=>'Veículo','other'=>'Outro bem'];
+    public const LIABILITY_TYPES=['loan'=>'Empréstimo','mortgage'=>'Financiamento','debt'=>'Dívida','installment'=>'Parcelamento','other'=>'Outra obrigação'];
+    public static function overview(int $userId): array
+    {
+        $db=Database::connection();$balances=FinancialService::balances($userId);$accountTotal=array_sum(array_map(fn($row)=>(int)$row['balance'],array_filter($balances,fn($row)=>$row['type']!=='investment')));$stmt=$db->prepare('SELECT * FROM assets WHERE user_id=:user ORDER BY is_active DESC,name');$stmt->execute(['user'=>$userId]);$assets=$stmt->fetchAll();$stmt=$db->prepare('SELECT * FROM liabilities WHERE user_id=:user ORDER BY is_active DESC,due_date,name');$stmt->execute(['user'=>$userId]);$liabilities=$stmt->fetchAll();$stmt=$db->prepare('SELECT COALESCE(SUM(market_value),0) FROM investments WHERE user_id=:user AND is_active=1');$stmt->execute(['user'=>$userId]);$investments=(int)$stmt->fetchColumn();$assetTotal=$accountTotal+$investments+array_sum(array_map(fn($row)=>(int)$row['current_value'],array_filter($assets,fn($row)=>(int)$row['is_active']===1)));$liabilityTotal=array_sum(array_map(fn($row)=>(int)$row['remaining_amount'],array_filter($liabilities,fn($row)=>(int)$row['is_active']===1)));$month=date('Y-m');$now=gmdate('c');$stmt=$db->prepare('INSERT INTO net_worth_snapshots(user_id,reference_month,assets_total,liabilities_total,net_worth,created_at) VALUES(:user,:month,:assets,:liabilities,:net,:at) ON CONFLICT(user_id,reference_month) DO UPDATE SET assets_total=excluded.assets_total,liabilities_total=excluded.liabilities_total,net_worth=excluded.net_worth,created_at=excluded.created_at');$stmt->execute(['user'=>$userId,'month'=>$month,'assets'=>$assetTotal,'liabilities'=>$liabilityTotal,'net'=>$assetTotal-$liabilityTotal,'at'=>$now]);$stmt=$db->prepare('SELECT reference_month,assets_total,liabilities_total,net_worth FROM net_worth_snapshots WHERE user_id=:user ORDER BY reference_month DESC LIMIT 24');$stmt->execute(['user'=>$userId]);$history=array_reverse($stmt->fetchAll());return ['accounts'=>$balances,'accountTotal'=>$accountTotal,'investments'=>$investments,'assets'=>$assets,'liabilities'=>$liabilities,'assetTotal'=>$assetTotal,'liabilityTotal'=>$liabilityTotal,'netWorth'=>$assetTotal-$liabilityTotal,'history'=>$history];
+    }
+}
